@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-﻿using System;
+using System;
 using System.Linq;
 using System.Management.Automation;
 using static Microsoft.Rest.ClientRuntime.PowerShell.MarkdownRenderer;
@@ -33,6 +33,9 @@ namespace Microsoft.Rest.ClientRuntime.PowerShell
     [ValidateNotNullOrEmpty]
     public string ExamplesFolder { get; set; }
 
+    [Parameter(Mandatory = true)]
+    public SwitchParameter ExcludeExampleTemplates { get; set; }
+
     protected override void ProcessRecord()
     {
       try
@@ -41,7 +44,7 @@ namespace Microsoft.Rest.ClientRuntime.PowerShell
         var variantGroups = FunctionInfo.Select(fi => fi.BaseObject).Cast<FunctionInfo>()
             .Join(helpInfos, fi => fi.Name, phi => phi.CmdletName, (fi, phi) => fi.ToVariants(phi))
             .Select(va => new VariantGroup(ModuleInfo.Name, va.First().CmdletName, va, String.Empty));
-        WriteMarkdowns(variantGroups, ModuleInfo.ToModuleInfo(), DocsFolder, ExamplesFolder);
+        WriteMarkdowns(variantGroups, ModuleInfo.ToModuleInfo(), DocsFolder, ExamplesFolder, ExcludeExampleTemplates);
       }
       catch (Exception ee)
       {

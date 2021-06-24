@@ -14,7 +14,7 @@ namespace Microsoft.Rest.ClientRuntime.PowerShell
 {
     internal static class MarkdownRenderer
     {
-        public static void WriteMarkdowns(IEnumerable<VariantGroup> variantGroups, PsModuleHelpInfo moduleHelpInfo, string docsFolder, string examplesFolder)
+        public static void WriteMarkdowns(IEnumerable<VariantGroup> variantGroups, PsModuleHelpInfo moduleHelpInfo, string docsFolder, string examplesFolder, bool excludeExampleTemplates)
         {
             Directory.CreateDirectory(docsFolder);
             var markdownInfos = variantGroups.Where(vg => !vg.IsInternal).Select(vg => new MarkdownHelpInfo(vg, examplesFolder)).OrderBy(mhi => mhi.CmdletName).ToArray();
@@ -36,7 +36,13 @@ namespace Microsoft.Rest.ClientRuntime.PowerShell
                 sb.Append($"## DESCRIPTION{Environment.NewLine}{markdownInfo.Description.ToDescriptionFormat()}{Environment.NewLine}{Environment.NewLine}");
 
                 sb.Append($"## EXAMPLES{Environment.NewLine}{Environment.NewLine}");
-                foreach (var exampleInfo in markdownInfo.Examples)
+                // When ExcludeExampleTemplates is specified, exclude empty templates from the Mark Down file
+                // By comparing each example with the DefaultExampleHelpInfo
+                var markdownExampleHelpInfos = markdownInfo.Examples.Where(example =>
+                {
+                    return !excludeExampleTemplates || DefaultExampleHelpInfos.All(defaultExample => example != defaultExample);
+                });
+                foreach (var exampleInfo in markdownExampleHelpInfos)
                 {
                     sb.Append(exampleInfo.ToHelpExampleOutput());
                 }

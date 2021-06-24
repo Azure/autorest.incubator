@@ -66,7 +66,7 @@ foreach($directory in $directories)
   $null = New-Item -ItemType Directory -Force -Path $docsPath -ErrorAction SilentlyContinue
   $examplesPath = Join-Path $examplesFolder $directory.Name
 
-  Export-HelpMarkdown -ModuleInfo $moduleInfo -FunctionInfo $cmdletFunctionInfo -HelpInfo $cmdletHelpInfo -DocsFolder $docsPath -ExamplesFolder $examplesPath
+  Export-HelpMarkdown -ModuleInfo $moduleInfo -FunctionInfo $cmdletFunctionInfo -HelpInfo $cmdletHelpInfo -DocsFolder $docsPath -ExamplesFolder $examplesPath -ExcludeExampleTemplates:$ExcludeExampleTemplates
   Write-Host -ForegroundColor Green "Created documentation in '$docsPath'"
 }
 

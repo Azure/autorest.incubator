@@ -1,6 +1,6 @@
 {
   "name": "@autorest/powershell",
-  "version": "2.1.0",
+  "version": "2.1.402",
   "description": "AutoRest PowerShell Cmdlet Generator",
   "main": "dist/exports.js",
   "typings": "dist/exports.d.ts",

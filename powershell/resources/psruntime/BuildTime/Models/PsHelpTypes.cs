@@ -105,7 +105,7 @@ namespace Microsoft.Rest.ClientRuntime.PowerShell
         }
     }
 
-    internal class PsHelpExampleInfo
+    internal class PsHelpExampleInfo : IEquatable<PsHelpExampleInfo>
     {
         public string Title { get; }
         public string Code { get; }
@@ -125,6 +125,44 @@ namespace Microsoft.Rest.ClientRuntime.PowerShell
         }
 
         public static implicit operator PsHelpExampleInfo(MarkdownExampleHelpInfo markdownExample) => new PsHelpExampleInfo(markdownExample);
+
+        public static bool operator ==(PsHelpExampleInfo psHelpExampleInfo, MarkdownExampleHelpInfo markdownExampleHelpInfo)
+        {
+            return psHelpExampleInfo?.Title == markdownExampleHelpInfo?.Name &&
+                   psHelpExampleInfo?.Code == markdownExampleHelpInfo?.Code &&
+                   psHelpExampleInfo?.Remarks == markdownExampleHelpInfo?.Description;
+        }
+
+        public static bool operator !=(PsHelpExampleInfo psHelpExampleInfo, MarkdownExampleHelpInfo markdownExampleHelpInfo)
+        {
+            return !(psHelpExampleInfo == markdownExampleHelpInfo);
+        }
+
+        public bool Equals(PsHelpExampleInfo other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+            return string.Equals(Title, other.Title, StringComparison.OrdinalIgnoreCase) && string.Equals(Code, other.Code, StringComparison.OrdinalIgnoreCase) && string.Equals(Remarks, other.Remarks, StringComparison.OrdinalIgnoreCase);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((PsHelpExampleInfo)obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = (Title != null ? StringComparer.OrdinalIgnoreCase.GetHashCode(Title) : 0);
+                hashCode = (hashCode * 397) ^ (Code != null ? StringComparer.OrdinalIgnoreCase.GetHashCode(Code) : 0);
+                hashCode = (hashCode * 397) ^ (Remarks != null ? StringComparer.OrdinalIgnoreCase.GetHashCode(Remarks) : 0);
+                return hashCode;
+            }
+        }
     }
 
     internal class PsParameterHelpInfo

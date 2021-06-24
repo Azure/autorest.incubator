@@ -242,11 +242,15 @@ namespace Microsoft.Rest.ClientRuntime.PowerShell
 
     internal class HelpCommentOutput
     {
+        private readonly bool _excludeExampleTemplates;
+
         public VariantGroup VariantGroup { get; }
         public CommentInfo CommentInfo { get; }
 
-        public HelpCommentOutput(VariantGroup variantGroup)
+        public HelpCommentOutput(VariantGroup variantGroup, bool excludeExampleTemplates)
         {
+            _excludeExampleTemplates = excludeExampleTemplates;
+
             VariantGroup = variantGroup;
             CommentInfo = variantGroup.CommentInfo;
         }
@@ -262,7 +266,16 @@ namespace Microsoft.Rest.ClientRuntime.PowerShell
             var relatedLinks = String.Join(Environment.NewLine, CommentInfo.RelatedLinks.Select(l => $".Link{Environment.NewLine}{l}"));
             var relatedLinksText = !String.IsNullOrEmpty(relatedLinks) ? $"{Environment.NewLine}{relatedLinks}" : String.Empty;
             var examples = "";
-            foreach (var example in VariantGroup.HelpInfo.Examples)
+            // Exclude all Examples that are Templates
+            var exampleHelpInfos = VariantGroup.HelpInfo.Examples.Where(example =>
+            {
+                if (_excludeExampleTemplates)
+                {
+                    return MarkdownTypesExtensions.DefaultExampleHelpInfos.All(defaultExample => example != defaultExample);
+                }
+                return true;
+            });
+            foreach (var example in exampleHelpInfos)
             {
                 examples = examples + ".Example" + "\r\n" + example.Code + "\r\n";
             }
@@ -366,7 +379,7 @@ namespace Microsoft.Rest.ClientRuntime.PowerShell
         public Type ParameterType { get; }
         public bool IsMandatory { get; }
         public int? Position { get; }
-        
+
         public bool IncludeSpace { get; }
         public bool IncludeDash { get; }
 
@@ -479,7 +492,7 @@ namespace Microsoft.Rest.ClientRuntime.PowerShell
 
         public static EndOutput ToEndOutput(this VariantGroup variantGroup) => new EndOutput();
 
-        public static HelpCommentOutput ToHelpCommentOutput(this VariantGroup variantGroup) => new HelpCommentOutput(variantGroup);
+        public static HelpCommentOutput ToHelpCommentOutput(this VariantGroup variantGroup, bool excludeTemplateExamples) => new HelpCommentOutput(variantGroup, excludeTemplateExamples);
 
         public static ParameterDescriptionOutput ToParameterDescriptionOutput(this string description) => new ParameterDescriptionOutput(description);
 
@@ -497,7 +510,7 @@ namespace Microsoft.Rest.ClientRuntime.PowerShell
 
         public static string ToNoteOutput(this ComplexInterfaceInfo complexInterfaceInfo, string currentIndent = "", bool includeDashes = false, bool includeBackticks = false, bool isFirst = true)
         {
-            string RenderProperty(ComplexInterfaceInfo info, string indent, bool dash, bool backtick) => 
+            string RenderProperty(ComplexInterfaceInfo info, string indent, bool dash, bool backtick) =>
                 $"{indent}{(dash ? "- " : String.Empty)}{(backtick ? "`" : String.Empty)}{info.ToPropertySyntaxOutput()}{(backtick ? "`" : String.Empty)}: {info.Description}";
 
             var nested = complexInterfaceInfo.NestedInfos.Select(ni =>

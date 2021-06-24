@@ -52,7 +52,7 @@ namespace Microsoft.Rest.ClientRuntime.PowerShell
             SyntaxInfos = variantGroup.Variants
                 .Select(v => new MarkdownSyntaxHelpInfo(v, variantGroup.ParameterGroups, v.VariantName == variantGroup.DefaultParameterSetName))
                 .OrderByDescending(v => v.IsDefault).ThenBy(v => v.ParameterSetName).ToArray();
-            Examples = GetExamplesFromMarkdown(examplesFolder).NullIfEmpty() 
+            Examples = GetExamplesFromMarkdown(examplesFolder).NullIfEmpty()
                        ?? helpInfo.Examples.Select(e => e.ToExampleHelpInfo()).ToArray().NullIfEmpty()
                        ?? DefaultExampleHelpInfos;
 
@@ -154,7 +154,7 @@ namespace Microsoft.Rest.ClientRuntime.PowerShell
         }
     }
 
-    internal class MarkdownExampleHelpInfo
+    internal class MarkdownExampleHelpInfo : IEquatable<MarkdownExampleHelpInfo>
     {
         public string Name { get; }
         public string Code { get; }
@@ -165,6 +165,44 @@ namespace Microsoft.Rest.ClientRuntime.PowerShell
             Name = name;
             Code = code;
             Description = description;
+        }
+
+        public static bool operator ==(MarkdownExampleHelpInfo a, MarkdownExampleHelpInfo b)
+        {
+            return a?.Name == b?.Name &&
+                   a?.Code == b?.Code &&
+                   a?.Description == b?.Description;
+        }
+
+        public static bool operator !=(MarkdownExampleHelpInfo a, MarkdownExampleHelpInfo b)
+        {
+            return !(a == b);
+        }
+
+        public bool Equals(MarkdownExampleHelpInfo other)
+        {
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+            return string.Equals(Name, other.Name, StringComparison.OrdinalIgnoreCase) && string.Equals(Code, other.Code, StringComparison.OrdinalIgnoreCase) && string.Equals(Description, other.Description, StringComparison.OrdinalIgnoreCase);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((MarkdownExampleHelpInfo)obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = (Name != null ? StringComparer.OrdinalIgnoreCase.GetHashCode(Name) : 0);
+                hashCode = (hashCode * 397) ^ (Code != null ? StringComparer.OrdinalIgnoreCase.GetHashCode(Code) : 0);
+                hashCode = (hashCode * 397) ^ (Description != null ? StringComparer.OrdinalIgnoreCase.GetHashCode(Description) : 0);
+                return hashCode;
+            }
         }
     }
 
