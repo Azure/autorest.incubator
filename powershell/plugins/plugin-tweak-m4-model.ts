@@ -26,6 +26,8 @@ async function tweakModel(state: State): Promise<PwshModel> {
 
   handleNoinlineDirective(state);
 
+  handleDiscriminator(state);
+
   return model;
 }
 
@@ -40,6 +42,15 @@ function handleNoinlineDirective(state: State) {
     }
   }
 }
+
+function handleDiscriminator(state: State) {
+  for (const model of state.model.schemas.objects || []) {
+    if (model.discriminator) {
+      model.language.default['skip-inline'] = true;
+    }
+  }
+}
+
 function addResponseHeaderSchema(model: CodeModel) {
   // In remodeler, each operations response headers will has its own scheam. Each header will be schema's property. 
   // But in m4, if 'schema' is not explicitly defined, even 'headers' is specified, there won't be a schema for headers.
